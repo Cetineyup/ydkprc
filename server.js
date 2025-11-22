@@ -462,6 +462,8 @@ app.get('/api/istatistikler', (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Sunucu çalışıyor: http://localhost:${PORT}`);
+const port = process.env.PORT || 3100;   // Render 10000 verirse onu kullanır, yoksa 3100
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Sunucu çalışıyor: http://0.0.0.0:${port}`);
 });
