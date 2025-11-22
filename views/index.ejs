@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= firma.firma_adi %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* SABİT SIDEBAR İÇİN GÜNCELLENMİŞ STİLLER */
+        .sidebar {
+            background: #2c3e50;
+            height: 100vh;      /* Ekranın tam yüksekliği */
+            position: fixed;    /* Sabit konum */
+            top: 0;
+            left: 0;
+            z-index: 1030;      /* İçeriğin üstünde kalmasını sağla */
+            padding: 0;
+        }
+
+        /* Ana içerik alanının sidebar'a göre boşluğunu ayarlama */
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 768px ve üzeri (Tablet ve üzeri) */
+        @media (min-width: 768px) {
+            .sidebar {
+                width: 25%; /* col-md-3 */
+            }
+            /* col-md-9'u sidebar'ın genişliği kadar sağa kaydır ve kalan alanı kullan */
+            .col-md-9 {
+                margin-left: 25%;
+                width: 75%; 
+            }
+        }
+
+        /* 992px ve üzeri (Masaüstü) */
+        @media (min-width: 992px) {
+            .sidebar {
+                width: 16.6667%; /* col-lg-2 */
+            }
+            /* col-lg-10'u sidebar'ın genişliği kadar sağa kaydır ve kalan alanı kullan */
+            .col-lg-10 {
+                margin-left: 16.6667%; 
+                width: 83.3333%; 
+            }
+        }
+        
+        /* Diğer Stil Kuralları */
+        .sidebar-brand {
+            padding: 1rem;
+            color: white;
+            border-bottom: 1px solid #34495e;
+            text-align: center;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #34495e;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background: #34495e;
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background: #3498db;
+        }
+        
+        .stat-card { 
+            padding: 15px;
+            border-radius: 8px; 
+            color: white; 
+            margin-bottom: 10px;
+        }
+        .content-area {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* SCROLLBAR STİLLERİ */
+        .table-scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .table-scroll-container::-webkit-scrollbar { width: 6px; }
+        .table-scroll-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        .table-scroll-container::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+
+        /* YAZDIRMA (PRINT) STİLLERİ */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area {
+                position: absolute;
+                left: 0; top: 0;
+                width: 100%;
+                padding: 15px;
+                background: white;
+            }
+            .no-print { display: none !important; }
+            .sidebar { display: none !important; }
+            .main-content { margin: 0; padding: 0; width: 100% !important; margin-left: 0 !important; }
+            
+            .print-header {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: flex-end;
+                border-bottom: 2px solid #333;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            .print-header h3 { margin: 0; font-size: 1.4rem; font-weight: bold; }
+            .print-header h5 { margin: 0; font-size: 1rem; font-weight: bold; }
+            .print-header p, .print-header small { margin: 0; color: #444; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="sidebar-brand">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tools"></i> <%= firma.firma_adi %>
+                    </h6>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>" href="/">
+                        <i class="fas fa-home me-2"></i>Dashboard
+                    </a>
+                    <a class="nav-link <%= currentPage === 'islemler' ? 'active' : '' %>" href="/islemler">
+                        <i class="fas fa-exchange-alt me-2"></i>İşlemler
+                    </a>
+                    <a class="nav-link <%= currentPage === 'ekstre' ? 'active' : '' %>" href="/ekstre">
+                        <i class="fas fa-chart-bar me-2"></i>Raporlar
+                    </a>
+                    <a class="nav-link <%= currentPage === 'cariler' ? 'active' : '' %>" href="/cariler">
+                        <i class="fas fa-users me-2"></i>Cariler
+                    </a>
+                    <a class="nav-link <%= currentPage === 'alt-musteriler' ? 'active' : '' %>" href="/alt-musteriler">
+                        <i class="fas fa-list me-2"></i>Alt Müşteriler
+                    </a>
+                    <a class="nav-link <%= currentPage === 'ayarlar' ? 'active' : '' %>" href="/firma-ayarlar">
+                        <i class="fas fa-cog me-2"></i>Ayarlar
+                    </a>
+                </nav>
+                
+                <div class="p-3 border-top border-secondary">
+                    <h6 class="text-white mb-2">Hızlı İşlemler</h6>
+                    <button class="btn btn-primary btn-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#islemModal">
+                        <i class="fas fa-plus-circle"></i> Yeni İşlem
+                    </button>
+                    <button class="btn btn-success btn-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#musteriModal">
+                        <i class="fas fa-user-plus"></i> Müşteri Ekle
+                    </button>
+                    <button class="btn btn-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#altMusteriModal">
+                        <i class="fas fa-users"></i> Alt Müşteri
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="content-area">
+                    <% if (currentPage === 'dashboard') { %>
+                        <div class="row g-2 mb-4">
+                            <div class="col-md-4">
+                                <div class="stat-card bg-primary">
+                                    <div class="d-flex justify-content-between">
+                                        <div><small>TOPLAM ALACAK</small><div class="h5 mb-0"><%= formatTutar(toplamAlacak) %> ₺</div></div>
+                                        <i class="fas fa-wallet fa-2x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card bg-success">
+                                    <div class="d-flex justify-content-between">
+                                        <div><small>AKTİF CARİ</small><div class="h5 mb-0"><%= cariler.length %></div></div>
+                                        <i class="fas fa-users fa-2x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card bg-warning">
+                                    <div class="d-flex justify-content-between">
+                                        <div><small>BORÇLU CARİ</small><div class="h5 mb-0"><%= enBorclular.length %></div></div>
+                                        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="card h-100">
+                                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Son İşlemler (Son 50)</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <% if (sonIslemler.length > 0) { %>
+                                            <div class="table-scroll-container">
+                                                <table class="table table-sm table-hover mb-0 align-middle">
+                                                    <thead class="table-light sticky-top" style="z-index: 1;">
+                                                        <tr>
+                                                            <th>Tarih</th>
+                                                            <th>Cari / Alt Müşteri</th>
+                                                            <th>Açıklama</th>
+                                                            <th class="text-end">Tutar</th>
+                                                            <th width="80" class="text-center">İşlem</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% sonIslemler.forEach(islem => { %>
+                                                            <tr>
+                                                                <td width="90"><small><%= moment(islem.tarih).format('DD.MM.YY') %></small></td>
+                                                                <td>
+                                                                    <div class="fw-bold"><%= islem.ad_soyad %></div>
+                                                                    <% if (islem.alt_musteri_adi) { %>
+                                                                        <small class="text-muted"><i class="fas fa-level-up-alt fa-rotate-90 me-1"></i><%= islem.alt_musteri_adi %></small>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td><small><%= islem.urun_aciklama %></small></td>
+                                                                <td class="text-end">
+                                                                    <span class="badge <%= islem.islem_tipi === 'Satis' ? 'bg-success' : 'bg-danger' %>">
+                                                                        <%= islem.islem_tipi === 'Satis' ? '+' : '-' %><%= formatTutar(islem.tutar) %> ₺
+                                                                    </span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <div class="btn-group">
+                                                                        <button class="btn btn-xs btn-outline-warning py-0 edit-islem"
+                                                                                data-bs-toggle="modal" data-bs-target="#editIslemModal"
+                                                                                data-id="<%= islem.id %>" data-contact="<%= islem.contact_id %>"
+                                                                                data-sub="<%= islem.sub_contact_id %>" data-tip="<%= islem.islem_tipi %>"
+                                                                                data-tutar="<%= islem.tutar %>" data-urun="<%= islem.urun_aciklama %>"
+                                                                                data-aciklama="<%= islem.aciklama %>" data-tarih="<%= islem.tarih %>">
+                                                                            <i class="fas fa-pen" style="font-size: 10px;"></i>
+                                                                        </button>
+                                                                        <a href="/islem-sil/<%= islem.id %>" class="btn btn-xs btn-outline-danger py-0"
+                                                                           onclick="return confirm('Silmek istediğinize emin misiniz?')"><i class="fas fa-times" style="font-size: 10px;"></i></a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <% }); %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="text-center py-4 text-muted"><p class="mb-0">Henüz işlem bulunmuyor</p></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Borçlu Cariler</h6>
+                                        <span class="badge bg-danger"><%= enBorclular.length %></span>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <% if (enBorclular.length > 0) { %>
+                                            <div class="table-scroll-container">
+                                                <div class="list-group list-group-flush">
+                                                    <% enBorclular.forEach(cari => { %>
+                                                        <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                            <div>
+                                                                <div class="fw-bold"><%= cari.ad_soyad %></div>
+                                                                <small class="text-muted"><%= cari.tip %></small>
+                                                            </div>
+                                                            <span class="badge bg-danger"><%= formatTutar(cari.bakiye) %> ₺</span>
+                                                        </div>
+                                                    <% }); %>
+                                                </div>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="text-center py-4 text-muted"><p class="mb-0">Borçlu cari yok</p></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <% } else if (currentPage === 'islemler') { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4><i class="fas fa-exchange-alt"></i> İşlem Geçmişi</h4>
+                            <span class="badge bg-secondary"><%= islemler.length %> kayıt listelendi</span>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-body py-3">
+                                <form method="GET" action="/islemler" class="row g-2 align-items-end">
+                                    <div class="col-md-3">
+                                        <label class="form-label small mb-1">Cari / Usta</label>
+                                        <select name="cari_id" class="form-select form-select-sm" id="islemlerCariSelect">
+                                            <option value="">Tümü</option>
+                                            <% cariler.forEach(cari => { %>
+                                                <option value="<%= cari.id %>" <%= filtre.cari_id == cari.id ? 'selected' : '' %>><%= cari.ad_soyad %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small mb-1">Alt Müşteri</label>
+                                        <select name="alt_musteri_id" class="form-select form-select-sm" id="islemlerAltMusteriSelect">
+                                            <option value="">Tümü</option>
+                                            <% if(typeof filtre !== 'undefined' && filtre.cari_id){ %>
+                                                <% } else if(typeof tumAltMusteriler !== 'undefined'){ tumAltMusteriler.forEach(am => { %>
+                                                <option value="<%= am.id %>" <%= typeof filtre !== 'undefined' && filtre.alt_musteri_id == am.id ? 'selected' : '' %>>
+                                                    <%= am.usta_adi %> -> <%= am.ad_soyad %>
+                                                </option>
+                                            <% }); } %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small mb-1">İşlem Tipi</label>
+                                        <select name="islem_tipi" class="form-select form-select-sm">
+                                            <option value="">Tümü</option>
+                                            <option value="Satis" <%= filtre.islem_tipi == 'Satis' ? 'selected' : '' %>>Satış (+)</option>
+                                            <option value="Tahsilat" <%= filtre.islem_tipi == 'Tahsilat' ? 'selected' : '' %>>Tahsilat (-)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label class="form-label small mb-1">Başlangıç</label>
+                                        <input type="date" name="baslangic" class="form-control form-control-sm" value="<%= filtre.baslangic %>">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label class="form-label small mb-1">Bitiş</label>
+                                        <input type="date" name="bitis" class="form-control form-control-sm" value="<%= filtre.bitis %>">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-filter"></i></button>
+                                            <a href="/islemler" class="btn btn-secondary btn-sm"><i class="fas fa-sync"></i></a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <% if (islemler.length > 0) { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover mb-0 align-middle">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th width="120">Tarih</th>
+                                                    <th>Cari</th>
+                                                    <th>Alt Müşteri</th>
+                                                    <th>Açıklama</th>
+                                                    <th class="text-end">Tutar</th>
+                                                    <th width="100" class="text-end pe-3">İşlem</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% islemler.forEach(islem => { %>
+                                                    <tr>
+                                                        <td><%= moment(islem.tarih).format('DD.MM.YY HH:mm') %></td>
+                                                        <td><span class="fw-bold"><%= islem.ad_soyad %></span></td>
+                                                        <td>
+                                                            <% if (islem.alt_musteri_adi) { %>
+                                                                <span class="badge bg-light text-dark border">
+                                                                    <%= islem.alt_musteri_adi %> <%= islem.arac_plaka ? '('+islem.arac_plaka+')' : '' %>
+                                                                </span>
+                                                            <% } else { %><span class="text-muted small">-</span><% } %>
+                                                        </td>
+                                                        <td>
+                                                            <%= islem.urun_aciklama %>
+                                                            <% if(islem.aciklama){ %><br><small class="text-muted fst-italic"><%= islem.aciklama %></small><% } %>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <span class="fw-bold <%= islem.islem_tipi === 'Satis' ? 'text-success' : 'text-danger' %>">
+                                                                <%= islem.islem_tipi === 'Satis' ? '+' : '-' %><%= formatTutar(islem.tutar) %> ₺
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="btn-group">
+                                                                <button class="btn btn-sm btn-outline-warning edit-islem"
+                                                                        data-bs-toggle="modal" data-bs-target="#editIslemModal"
+                                                                        data-id="<%= islem.id %>" data-contact="<%= islem.contact_id %>"
+                                                                        data-sub="<%= islem.sub_contact_id %>" data-tip="<%= islem.islem_tipi %>"
+                                                                        data-tutar="<%= islem.tutar %>" data-urun="<%= islem.urun_aciklama %>"
+                                                                        data-aciklama="<%= islem.aciklama %>" data-tarih="<%= islem.tarih %>">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <a href="/islem-sil/<%= islem.id %>" class="btn btn-sm btn-outline-danger"
+                                                                   onclick="return confirm('Silmek istediğinize emin misiniz?')"><i class="fas fa-trash"></i></a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-center py-5 text-muted"><h5>Kayıt bulunamadı</h5></div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                    <% } else if (currentPage === 'ekstre') { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                            <h4><i class="fas fa-chart-bar"></i> Ekstre Raporu</h4>
+                            <button onclick="window.print()" class="btn btn-secondary">
+                                <i class="fas fa-print me-2"></i> Yazdır
+                            </button>
+                        </div>
+                        <div class="card mb-4 no-print">
+                            <div class="card-body">
+                                <form method="GET" class="row g-2">
+                                    <div class="col-md-3">
+                                        <select name="cari_id" class="form-select form-select-sm" id="ekstreCariSelect">
+                                            <option value="">Tüm Cariler</option>
+                                            <% cariler.forEach(function(cari) { %>
+                                                <option value="<%= cari.id %>" <%= typeof seciliCari !== 'undefined' && seciliCari == cari.id ? 'selected' : '' %>><%= cari.ad_soyad %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="alt_musteri_id" class="form-select form-select-sm" id="ekstreAltMusteriSelect">
+                                            <option value="">Tüm Alt Müşteriler</option>
+                                            <% if(typeof seciliCari !== 'undefined' && seciliCari){ %>
+                                                <% } else if (typeof tumAltMusteriler !== 'undefined') { tumAltMusteriler.forEach(function(am) { %>
+                                                <option value="<%= am.id %>" <%= typeof seciliAltMusteri !== 'undefined' && seciliAltMusteri == am.id ? 'selected' : '' %>>
+                                                    <%= am.usta_adi %> -> <%= am.ad_soyad %> (<%= am.arac_plaka || '-' %>)
+                                                </option>
+                                            <% }); } %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2"><input type="date" name="baslangic" class="form-control form-control-sm" value="<%= baslangicTarih || '' %>"></div>
+                                    <div class="col-md-2"><input type="date" name="bitis" class="form-control form-control-sm" value="<%= bitisTarih || '' %>"></div>
+                                    <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-filter"></i> Filtrele</button></div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="print-area">
+                            <div class="print-header">
+                                <div class="text-start">
+                                    <h3 class="text-uppercase"><%= firma.firma_adi %></h3>
+                                    <small style="display: block; max-width: 300px; line-height: 1.2;">
+                                        <%= firma.adres %><br>Tel: <%= firma.telefon %>
+                                    </small>
+                                    <% if (firma.vergi_dairesi) { %>
+                                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;"><%= firma.vergi_dairesi %> VD - <%= firma.vergi_no %></small>
+                                    <% } %>
+                                </div>
+                                <div class="text-end">
+                                    <h5 class="text-uppercase mb-1">CARİ HESAP EKSTRESİ</h5>
+                                    <div style="font-size: 0.9rem;">
+                                        <% if (typeof raporBaslangic !== 'undefined' && raporBaslangic && typeof raporBitis !== 'undefined' && raporBitis) { %>
+                                            <strong>Aralık:</strong> <%= moment(raporBaslangic).format('DD.MM.YYYY') %> - <%= moment(raporBitis).format('DD.MM.YYYY') %>
+                                        <% } else { %>
+                                            <strong>Aralık:</strong> Tüm Zamanlar
+                                        <% } %>
+                                    </div>
+                                    <small class="text-muted">Oluşturma: <%= moment().format('DD.MM.YYYY HH:mm') %></small>
+                                </div>
+                            </div>
+
+                            <% if (groupedReport && groupedReport.length > 0) { %>
+                                <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+                                    <span class="fw-bold">GENEL TOPLAM BAKİYE:</span>
+                                    <span class="h4 mb-0 fw-bold <%= genelToplam >= 0 ? 'text-success' : 'text-danger' %>">
+                                        <%= formatTutar(genelToplam) %> ₺
+                                    </span>
+                                </div>
+
+                                <% groupedReport.forEach(function(grup) { %>
+                                    <div class="card mb-4 border shadow-sm">
+                                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-primary"><i class="fas fa-user-tag me-2"></i> <%= grup.ad %></h6>
+                                                <% if(grup.plaka) { %>
+                                                    <small class="text-muted text-uppercase ps-4"><i class="fas fa-car me-1"></i> <%= grup.plaka %></small>
+                                                <% } %>
+                                            </div>
+                                            <div class="badge <%= grup.toplam >= 0 ? 'bg-success' : 'bg-danger' %> fs-6">Grup: <%= formatTutar(grup.toplam) %> ₺</div>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-secondary">
+                                                    <tr>
+                                                        <th width="100">Tarih</th>
+                                                        <th>Açıklama / Ürün</th>
+                                                        <th>Not</th>
+                                                        <th width="120" class="text-end">Tutar</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% grup.islemler.forEach(function(islem) { %>
+                                                        <tr>
+                                                            <td><%= moment(islem.tarih).format('DD.MM.YY') %></td>
+                                                            <td><%= islem.urun_aciklama %></td>
+                                                            <td class="text-muted small"><%= islem.aciklama || '-' %></td>
+                                                            <td class="text-end fw-bold <%= islem.islem_tipi === 'Satis' ? 'text-success' : 'text-danger' %>">
+                                                                <%= islem.islem_tipi === 'Satis' ? '+' : '-' %><%= formatTutar(islem.tutar) %> ₺
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                                
+                                <div class="d-none d-print-block mt-5 pt-5 text-center">
+                                    <div class="row">
+                                        <div class="col-6"><p>Teslim Eden</p><br><p>__________________</p></div>
+                                        <div class="col-6"><p>Teslim Alan</p><br><p>__________________</p></div>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-5 text-muted border rounded bg-white"><h5>Kayıt Bulunamadı</h5></div>
+                            <% } %>
+                        </div>
+
+                    <% } else if (currentPage === 'cariler') { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4><i class="fas fa-users"></i> Tüm Cariler</h4>
+                            <span class="badge bg-primary fs-6"><%= cariler.length %> kayıt</span>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-body py-3">
+                                <form method="GET" action="/cariler" class="row g-2 align-items-center">
+                                    <div class="col-md-4">
+                                        <input type="text" name="arama" class="form-control form-control-sm" 
+                                               placeholder="Cari Adı veya Telefon Ara..." 
+                                               value="<%= typeof filtreArama !== 'undefined' ? filtreArama : '' %>">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="tip" class="form-select form-select-sm">
+                                            <option value="">Tüm Tipler</option>
+                                            <option value="Usta" <%= typeof filtreTip !== 'undefined' && filtreTip === 'Usta' ? 'selected' : '' %>>Usta</option>
+                                            <option value="Bireysel" <%= typeof filtreTip !== 'undefined' && filtreTip === 'Bireysel' ? 'selected' : '' %>>Bireysel</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search"></i> Ara / Sırala</button></div>
+                                    <div class="col-md-2"><a href="/cariler" class="btn btn-secondary btn-sm w-100">Temizle</a></div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <% if (cariler.length > 0) { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover mb-0 align-middle">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Ad Soyad</th>
+                                                    <th>Tip</th>
+                                                    <th>Telefon</th>
+                                                    <th>Alt Müşteri</th>
+                                                    <th class="text-end">Bakiye</th>
+                                                    <th width="150" class="text-end pe-3">İşlemler</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% cariler.forEach(function(cari) { %>
+                                                    <tr>
+                                                        <td><div class="fw-bold"><%= cari.ad_soyad %></div></td>
+                                                        <td><span class="badge <%= cari.tip === 'Usta' ? 'bg-warning text-dark' : 'bg-info' %>"><%= cari.tip %></span></td>
+                                                        <td><%= cari.telefon ? cari.telefon : '-' %></td>
+                                                        <td><%= cari.tip === 'Usta' ? (cari.alt_musteri_sayisi || 0) + ' müşteri' : '-' %></td>
+                                                        <td class="text-end <%= cari.bakiye > 0 ? 'text-danger' : 'text-success' %> fw-bold"><%= formatTutar(cari.bakiye || 0) %> ₺</td>
+                                                        <td class="text-end">
+                                                            <div class="btn-group" role="group">
+                                                                <a href="/ekstre?cari_id=<%= cari.id %>" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-invoice"></i></a>
+                                                                <button type="button" class="btn btn-sm btn-outline-warning edit-cari"
+                                                                        data-bs-toggle="modal" data-bs-target="#editCariModal"
+                                                                        data-id="<%= cari.id %>" data-ad="<%= cari.ad_soyad %>"
+                                                                        data-tip="<%= cari.tip %>" data-tel="<%= cari.telefon %>">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <a href="/cari-sil/<%= cari.id %>" class="btn btn-sm btn-outline-danger"
+                                                                   onclick="return confirm('Silmek istediğinize emin misiniz?')"><i class="fas fa-trash"></i></a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-center py-5 text-muted"><h5>Kayıt bulunamadı</h5></div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                    <% } else if (currentPage === 'alt-musteriler') { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4><i class="fas fa-list"></i> Alt Müşteriler</h4>
+                            <span class="badge bg-primary fs-6"><%= altMusteriler.length %> kayıt</span>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-body py-3">
+                                <form method="GET" action="/alt-musteriler" class="row g-2 align-items-center">
+                                    <div class="col-md-4">
+                                        <select name="usta_id" class="form-select form-select-sm">
+                                            <option value="">Tüm Ustalar</option>
+                                            <% ustalar.forEach(usta => { %>
+                                                <option value="<%= usta.id %>" <%= typeof filtreUsta !== 'undefined' && filtreUsta == usta.id ? 'selected' : '' %>><%= usta.ad_soyad %></option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4"><input type="text" name="arama" class="form-control form-control-sm" placeholder="Ad Soyad veya Plaka ara..." value="<%= typeof filtreArama !== 'undefined' ? filtreArama : '' %>"></div>
+                                    <div class="col-md-2"><button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search"></i> Ara</button></div>
+                                    <div class="col-md-2"><a href="/alt-musteriler" class="btn btn-secondary btn-sm w-100">Temizle</a></div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <% if (altMusteriler.length > 0) { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover mb-0 align-middle">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Alt Müşteri</th>
+                                                    <th>Usta</th>
+                                                    <th>Araç Plakası</th>
+                                                    <th>Telefon</th>
+                                                    <th width="150" class="text-end pe-3">İşlemler</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% let currentUsta = ''; %>
+                                                <% altMusteriler.forEach(function(musteri) { %>
+                                                    <% if (currentUsta !== musteri.usta_adi && !filtreUsta && !filtreArama) { 
+                                                        currentUsta = musteri.usta_adi; %>
+                                                        <tr class="table-info"><td colspan="5" class="fw-bold text-primary"><i class="fas fa-tools me-2"></i> <%= currentUsta %></td></tr>
+                                                    <% } %>
+                                                    <tr>
+                                                        <td><strong><%= musteri.ad_soyad %></strong></td>
+                                                        <td><small class="text-muted"><%= musteri.usta_adi %></small></td>
+                                                        <td><span class="badge bg-secondary"><%= musteri.arac_plaka || '-' %></span></td>
+                                                        <td><%= musteri.telefon || '-' %></td>
+                                                        <td class="text-end">
+                                                            <div class="btn-group" role="group">
+                                                                <button type="button" class="btn btn-sm btn-outline-warning edit-alt-musteri"
+                                                                        data-bs-toggle="modal" data-bs-target="#editAltMusteriModal"
+                                                                        data-id="<%= musteri.id %>" data-usta="<%= musteri.parent_contact_id %>"
+                                                                        data-ad="<%= musteri.ad_soyad %>" data-plaka="<%= musteri.arac_plaka %>"
+                                                                        data-tel="<%= musteri.telefon %>">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <a href="/alt-musteri-sil/<%= musteri.id %>" class="btn btn-sm btn-outline-danger"
+                                                                   onclick="return confirm('Silmek istediğinize emin misiniz?')"><i class="fas fa-trash"></i></a>
+                                                                <a href="/ekstre?alt_musteri_id=<%= musteri.id %>" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-invoice"></i></a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-center py-5 text-muted"><h5>Kayıt bulunamadı</h5></div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                    <% } else if (currentPage === 'ayarlar') { %>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header"><h5 class="mb-0">Firma Bilgileri</h5></div>
+                                    <div class="card-body">
+                                        <form action="/firma-guncelle" method="POST">
+                                            <div class="mb-3"><label class="form-label">Firma Adı</label><input type="text" name="firma_adi" class="form-control" value="<%= firma.firma_adi %>" required></div>
+                                            <div class="mb-3"><label class="form-label">Adres</label><input type="text" name="adres" class="form-control" value="<%= firma.adres || '' %>"></div>
+                                            <div class="mb-3"><label class="form-label">Telefon</label><input type="text" name="telefon" class="form-control" value="<%= firma.telefon || '' %>"></div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3"><label class="form-label">Vergi Dairesi</label><input type="text" name="vergi_dairesi" class="form-control" value="<%= firma.vergi_dairesi || '' %>"></div>
+                                                <div class="col-md-6 mb-3"><label class="form-label">Vergi No</label><input type="text" name="vergi_no" class="form-control" value="<%= firma.vergi_no || '' %>"></div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Güncelle</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="islemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2"><h6 class="modal-title">Yeni İşlem</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/islem-kaydet" method="POST">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Cari</label><select name="contact_id" class="form-select form-select-sm" id="contactSelect" required><option value="">Seçiniz</option><% if (cariler) { cariler.forEach(cari => { %><option value="<%= cari.id %>"><%= cari.ad_soyad %></option><% }); } %></select></div>
+                            <div class="col-12"><label class="form-label">Alt Müşteri</label><select name="sub_contact_id" class="form-select form-select-sm" id="subContactSelect"><option value="">Seçiniz</option></select></div>
+                            <div class="col-6"><label class="form-label">İşlem Tipi</label><select name="islem_tipi" class="form-select form-select-sm" required><option value="Satis">Satış</option><option value="Tahsilat">Tahsilat</option></select></div>
+                            <div class="col-6"><label class="form-label">Tutar (₺)</label><input type="number" step="0.01" name="tutar" class="form-control form-control-sm" required></div>
+                            <div class="col-12"><label class="form-label">Ürün/Hizmet</label><input type="text" name="urun_aciklama" class="form-control form-control-sm" required></div>
+                            <div class="col-12"><label class="form-label">Açıklama</label><textarea name="aciklama" class="form-control form-control-sm" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">Tarih</label><input type="datetime-local" name="tarih" class="form-control form-control-sm"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Kaydet</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="musteriModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2"><h6 class="modal-title">Yeni Müşteri</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/musteri-kaydet" method="POST">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Ad Soyad</label><input type="text" name="ad_soyad" class="form-control form-control-sm" required></div>
+                            <div class="col-6"><label class="form-label">Tip</label><select name="tip" class="form-select form-select-sm" required><option value="Usta">Usta</option><option value="Bireysel">Bireysel</option></select></div>
+                            <div class="col-6"><label class="form-label">Telefon</label><input type="tel" name="telefon" class="form-control form-control-sm"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Kaydet</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="altMusteriModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2"><h6 class="modal-title">Yeni Alt Müşteri</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/alt-musteri-kaydet" method="POST">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Usta</label><select name="parent_contact_id" class="form-select form-select-sm" required><option value="">Seçiniz</option><% if (ustalar) { ustalar.forEach(usta => { %><option value="<%= usta.id %>"><%= usta.ad_soyad %></option><% }); } %></select></div>
+                            <div class="col-12"><label class="form-label">Alt Müşteri Adı</label><input type="text" name="ad_soyad" class="form-control form-control-sm" required></div>
+                            <div class="col-6"><label class="form-label">Araç Plakası</label><input type="text" name="arac_plaka" class="form-control form-control-sm"></div>
+                            <div class="col-6"><label class="form-label">Telefon</label><input type="tel" name="telefon" class="form-control form-control-sm"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Kaydet</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editAltMusteriModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-warning text-dark"><h6 class="modal-title">Alt Müşteri Düzenle</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/alt-musteri-guncelle" method="POST">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Usta</label><select name="parent_contact_id" id="edit_usta" class="form-select form-select-sm" required><% if (typeof ustalar !== 'undefined') { ustalar.forEach(usta => { %><option value="<%= usta.id %>"><%= usta.ad_soyad %></option><% }); } %></select></div>
+                            <div class="col-12"><label class="form-label">Alt Müşteri Adı</label><input type="text" name="ad_soyad" id="edit_ad" class="form-control form-control-sm" required></div>
+                            <div class="col-6"><label class="form-label">Araç Plakası</label><input type="text" name="arac_plaka" id="edit_plaka" class="form-control form-control-sm"></div>
+                            <div class="col-6"><label class="form-label">Telefon</label><input type="tel" name="telefon" id="edit_tel" class="form-control form-control-sm"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Güncelle</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editCariModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-warning text-dark"><h6 class="modal-title">Cari Bilgilerini Düzenle</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/cari-guncelle" method="POST">
+                    <input type="hidden" name="id" id="edit_cari_id">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Ad Soyad</label><input type="text" name="ad_soyad" id="edit_cari_ad" class="form-control form-control-sm" required></div>
+                            <div class="col-6"><label class="form-label">Tip</label><select name="tip" id="edit_cari_tip" class="form-select form-select-sm" required><option value="Usta">Usta</option><option value="Bireysel">Bireysel</option></select></div>
+                            <div class="col-6"><label class="form-label">Telefon</label><input type="tel" name="telefon" id="edit_cari_tel" class="form-control form-control-sm"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Güncelle</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editIslemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header py-2 bg-warning text-dark"><h6 class="modal-title">İşlemi Düzenle</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form action="/islem-guncelle" method="POST">
+                    <input type="hidden" name="id" id="edit_islem_id">
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-12"><label class="form-label">Cari</label><select name="contact_id" class="form-select form-select-sm" id="editContactSelect" required><% if (cariler) { cariler.forEach(cari => { %><option value="<%= cari.id %>"><%= cari.ad_soyad %></option><% }); } %></select></div>
+                            <div class="col-12"><label class="form-label">Alt Müşteri</label><select name="sub_contact_id" class="form-select form-select-sm" id="editSubContactSelect"><option value="">Yok / Ana Cari</option></select></div>
+                            <div class="col-6"><label class="form-label">İşlem Tipi</label><select name="islem_tipi" id="edit_islem_tipi" class="form-select form-select-sm" required><option value="Satis">Satış</option><option value="Tahsilat">Tahsilat</option></select></div>
+                            <div class="col-6"><label class="form-label">Tutar (₺)</label><input type="number" step="0.01" name="tutar" id="edit_islem_tutar" class="form-control form-control-sm" required></div>
+                            <div class="col-12"><label class="form-label">Ürün/Hizmet</label><input type="text" name="urun_aciklama" id="edit_islem_urun" class="form-control form-control-sm" required></div>
+                            <div class="col-12"><label class="form-label">Açıklama</label><textarea name="aciklama" id="edit_islem_aciklama" class="form-control form-control-sm" rows="2"></textarea></div>
+                            <div class="col-12"><label class="form-label">Tarih</label><input type="datetime-local" name="tarih" id="edit_islem_tarih" class="form-control form-control-sm" required></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button><button type="submit" class="btn btn-primary btn-sm">Güncelle</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // YARDIMCI FONKSİYON: Alt Müşterileri API ile yükler
+            function loadAltMusteriler(ustaId, targetSelectId, selectedId = null, defaultOptionText = 'Yok / Ana Cari') {
+                const select = document.getElementById(targetSelectId);
+                if (!select) return;
+                
+                select.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                
+                if (!ustaId || ustaId === '') {
+                    return;
+                }
+
+                select.innerHTML = `<option value="">Yükleniyor...</option>`;
+                
+                fetch(`/api/alt-musteriler/${ustaId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        select.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                        data.forEach(m => {
+                            const opt = document.createElement('option');
+                            opt.value = m.id;
+                            opt.textContent = `${m.ad_soyad} - ${m.arac_plaka || ''}`;
+                            if (selectedId && selectedId == m.id) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(() => {
+                         select.innerHTML = `<option value="">Hata (Tekrar deneyin)</option>`;
+                    });
+            }
+
+            // YARDIMCI FONKSİYON: Filtreler için basamaklı seçimi ayarlar
+            function setupCascadingFilter(cariSelectId, altMusteriSelectId, initialSubContactId) {
+                const cariSelect = document.getElementById(cariSelectId);
+                const altMusteriSelect = document.getElementById(altMusteriSelectId);
+
+                if (!cariSelect || !altMusteriSelect) return;
+                
+                const loadSubsForFilter = (ustaId, selectedSubId) => {
+                    altMusteriSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+                    
+                    if (ustaId) {
+                        fetch(`/api/alt-musteriler/${ustaId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                altMusteriSelect.innerHTML = '<option value="">Tümü</option>'; // Filtrede Tümü göster
+                                data.forEach(musteri => {
+                                    const option = document.createElement('option');
+                                    option.value = musteri.id;
+                                    option.textContent = `${musteri.ad_soyad} - ${musteri.arac_plaka || ''}`;
+                                    if (selectedSubId && selectedSubId == musteri.id) {
+                                        option.selected = true;
+                                    }
+                                    altMusteriSelect.appendChild(option);
+                                });
+                            })
+                            .catch(() => {
+                                 altMusteriSelect.innerHTML = '<option value="">Yükleme Hatası</option>';
+                            });
+                    } else {
+                        // Cari seçimi kaldırılırsa, alt müşteriyi "Tümü" yap
+                        altMusteriSelect.innerHTML = '<option value="">Tümü</option>';
+                    }
+                };
+
+                // 1. Sayfa ilk yüklendiğinde, eğer bir Cari seçili geldiyse alt müşterileri yükle
+                const initialCariId = cariSelect.value;
+                if (initialCariId) {
+                    // Cari seçili gelirse, Alt Müşterileri JS ile yükle
+                    loadSubsForFilter(initialCariId, initialSubContactId);
+                }
+
+                // 2. Cari değiştiğinde alt müşterileri filtrele
+                cariSelect.addEventListener('change', function() {
+                    loadSubsForFilter(this.value, null); // Yeni usta seçildiğinde alt müşteri seçimini sıfırla
+                });
+            }
+
+            // --- BAĞLANTILAR ---
+            
+            // 1. İşlem Ekle/Düzenle Modal Bağlantıları
+            const newIslemContactSelect = document.getElementById('contactSelect');
+            if (newIslemContactSelect) {
+                newIslemContactSelect.addEventListener('change', function() {
+                    loadAltMusteriler(this.value, 'subContactSelect', null, 'Seçiniz');
+                });
+            }
+            document.querySelectorAll('.edit-islem').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const contactId = this.getAttribute('data-contact');
+                    const subContactId = this.getAttribute('data-sub');
+                    const tip = this.getAttribute('data-tip');
+                    const tutar = this.getAttribute('data-tutar');
+                    const urun = this.getAttribute('data-urun');
+                    const aciklama = this.getAttribute('data-aciklama');
+                    let tarih = this.getAttribute('data-tarih');
+                    if(tarih) tarih = new Date(tarih).toISOString().slice(0, 16);
+
+                    document.getElementById('edit_islem_id').value = id;
+                    document.getElementById('editContactSelect').value = contactId;
+                    document.getElementById('edit_islem_tipi').value = tip;
+                    document.getElementById('edit_islem_tutar').value = tutar;
+                    document.getElementById('edit_islem_urun').value = urun;
+                    document.getElementById('edit_islem_aciklama').value = aciklama;
+                    document.getElementById('edit_islem_tarih').value = tarih;
+                    
+                    // Alt müşterileri yükle ve seçili olanı işaretle
+                    loadAltMusteriler(contactId, 'editSubContactSelect', subContactId);
+                });
+            });
+            document.getElementById('editContactSelect').addEventListener('change', function() {
+                 loadAltMusteriler(this.value, 'editSubContactSelect');
+            });
+
+
+            // 2. İşlemler Sayfası Filtre Bağlantısı (Güvenli Çağrı)
+            setupCascadingFilter(
+                'islemlerCariSelect', 
+                'islemlerAltMusteriSelect', 
+                // Filtre objesi sadece 'islemler' sayfasında tanımlı olduğu için güvenlik kontrolü
+                '<%= typeof filtre !== "undefined" && filtre.alt_musteri_id ? filtre.alt_musteri_id : "" %>'
+            );
+
+            // 3. Raporlar Sayfası Filtre Bağlantısı (Güvenli Çağrı)
+            setupCascadingFilter(
+                'ekstreCariSelect', 
+                'ekstreAltMusteriSelect', 
+                '<%= typeof seciliAltMusteri !== "undefined" ? seciliAltMusteri : "" %>'
+            );
+
+
+            // --- DİĞER DÜZENLEME BUTONLARI ---
+            document.querySelectorAll('.edit-alt-musteri').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('edit_id').value = this.getAttribute('data-id');
+                    document.getElementById('edit_usta').value = this.getAttribute('data-usta');
+                    document.getElementById('edit_ad').value = this.getAttribute('data-ad');
+                    document.getElementById('edit_plaka').value = this.getAttribute('data-plaka');
+                    document.getElementById('edit_tel').value = this.getAttribute('data-tel');
+                });
+            });
+            document.querySelectorAll('.edit-cari').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('edit_cari_id').value = this.getAttribute('data-id');
+                    document.getElementById('edit_cari_ad').value = this.getAttribute('data-ad');
+                    document.getElementById('edit_cari_tip').value = this.getAttribute('data-tip');
+                    document.getElementById('edit_cari_tel').value = this.getAttribute('data-tel');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
