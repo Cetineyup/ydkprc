@@ -461,9 +461,18 @@ app.get('/api/istatistikler', (req, res) => {
         res.status(500).json({ error: "Hata" });
     }
 });
+const mongoose = require('mongoose');
 
+// MongoDB Atlas Bağlantısı (Render'da environment variable'dan alacak)
+mongoose.connect(process.env.MONGODB_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
+.then(() => console.log('MongoDB Atlas Bağlandı'))
+.catch(err => console.log('MongoDB Bağlantı Hatası:', err));
 const port = process.env.PORT || 3100;   // Render 10000 verirse onu kullanır, yoksa 3100
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Sunucu çalışıyor: http://0.0.0.0:${port}`);
 });
+
